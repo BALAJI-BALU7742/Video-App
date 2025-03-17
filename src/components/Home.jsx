@@ -1,22 +1,20 @@
 import * as React from 'react';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
-function randomID(len) {
+// Function to generate a random ID
+function randomID(len = 5) {
   let result = '';
-  if (result) return result;
-  var chars = '12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP',
-    maxPos = chars.length,
-    i;
-  len = len || 5;
-  for (i = 0; i < len; i++) {
-    result += chars.charAt(Math.floor(Math.random() * maxPos));
+  const chars = '12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP';
+  for (let i = 0; i < len; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
 }
 
+// Function to get URL parameters
 export function getUrlParams(url = window.location.href) {
-  let urlStr = url.split('?')[1];
-  return new URLSearchParams(urlStr);
+  let params = new URLSearchParams(url.split('?')[1]);
+  return params;
 }
 
 export default function App() {
@@ -24,51 +22,68 @@ export default function App() {
   const userID = randomID(5);
   const userName = "User_" + userID;
 
+  React.useEffect(() => {
+    console.log(`Joining Room: ${roomID}`);
+    console.log(`User ID: ${userID}, Username: ${userName}`);
+  }, []);
+
   let myMeeting = async (element) => {
-    // Generate Kit Token
-    const appID = 740155524;
-    const serverSecret = "6f2bb83b004eaabeced49ec04ac20f64";
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      roomID,
-      userID,
-      userName
-    );
+    if (!element) return;
 
-    // Create instance object from Kit Token.
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
+    try {
+      // ZegoCloud Credentials
+      const appID = 740155524;
+      const serverSecret = "6f2bb83b004eaabeced49ec04ac20f64";
+      
+      // Generate Kit Token
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+      );
 
-    // Start the call with updated configurations
-    zp.joinRoom({
-      container: element,
-      sharedLinks: [
-        {
-          name: 'Personal link',
-          url:
-            window.location.protocol + '//' +
-            window.location.host + window.location.pathname +
-            '?roomID=' + roomID,
+      // Create ZegoUIKitPrebuilt instance
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+      // Join the video call
+      zp.joinRoom({
+        container: element,
+        sharedLinks: [
+          {
+            name: 'Invite Link',
+            url: `${window.location.origin}${window.location.pathname}?roomID=${roomID}`,
+          },
+        ],
+        turnOnRemoteCameraWhenJoining: true,  // Auto-enable remote camera
+        turnOnMicrophoneWhenJoining: true,    // Auto-enable microphone
+        showNonVideoUser: true,               // Show users even if camera is off
+        showUserList: true,                   // Show participant list
+        showRoomTimer: true,                   // Show room duration timer
+        showLeavingConfirmDialog: true,        // Confirm before leaving
+        showScreenSharingButton: true,         // Enable screen sharing
+        scenario: {
+          mode: ZegoUIKitPrebuilt.VideoConference,
         },
-      ],
-      turnOnRemoteCameraWhenJoining: true,  // Turns on remote camera
-      turnOnMicrophoneWhenJoining: true,    // Turns on microphone automatically
-      showNonVideoUser: true,               // Shows users even if their camera is off
-      showUserList: true,                    // Shows participant list
-      showRoomTimer: true,                   // Displays call duration
-      showLeavingConfirmDialog: true,        // Asks before leaving
-      showScreenSharingButton: true,         // Enables screen sharing
-      scenario: {
-        mode: ZegoUIKitPrebuilt.VideoConference,
-      },
-    });
+      });
+
+    } catch (error) {
+      console.error("Error initializing meeting:", error);
+    }
   };
 
   return (
-    <div
-      className="myCallContainer"
-      ref={myMeeting}
-      style={{ width: '100vw', height: '100vh' }}
-    ></div>
+    <div>
+      <h2 style={{ textAlign: 'center' }}>Video Chat Room</h2>
+      <p style={{ textAlign: 'center' }}>
+        Share this link: <strong>{window.location.href}</strong>
+      </p>
+      <div
+        className="myCallContainer"
+        ref={myMeeting}
+        style={{ width: '100vw', height: '90vh' }}
+      ></div>
+    </div>
   );
 }
