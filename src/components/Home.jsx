@@ -21,6 +21,8 @@ export function getUrlParams(url = window.location.href) {
 
 export default function App() {
   const roomID = getUrlParams().get('roomID') || randomID(5);
+  const userID = randomID(5);
+  const userName = "User_" + userID;
 
   let myMeeting = async (element) => {
     // Generate Kit Token
@@ -30,8 +32,8 @@ export default function App() {
       appID,
       serverSecret,
       roomID,
-      randomID(5), // User ID
-      randomID(5)  // User Name
+      userID,
+      userName
     );
 
     // Create instance object from Kit Token.
@@ -49,13 +51,13 @@ export default function App() {
             '?roomID=' + roomID,
         },
       ],
-      showNonVideoUser: true, // Shows users even if their camera is off
-      turnOnRemoteCameraWhenJoining: true, // Enables remote users' video
-      turnOnMicrophoneWhenJoining: true, // Enables microphone automatically
-      showRoomTimer: true, // Displays call duration timer
-      showUserList: true, // Shows participant list
-      showLeavingConfirmDialog: true, // Confirms before leaving the room
-      layout: "Auto", // Adjusts video layout dynamically
+      turnOnRemoteCameraWhenJoining: true,  // Turns on remote camera
+      turnOnMicrophoneWhenJoining: true,    // Turns on microphone automatically
+      showNonVideoUser: true,               // Shows users even if their camera is off
+      showUserList: true,                    // Shows participant list
+      showRoomTimer: true,                   // Displays call duration
+      showLeavingConfirmDialog: true,        // Asks before leaving
+      showScreenSharingButton: true,         // Enables screen sharing
       scenario: {
         mode: ZegoUIKitPrebuilt.VideoConference,
       },
